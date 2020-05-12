@@ -39,7 +39,7 @@ Cursor.prototype.count = function (...args) {
             if (typeof this.cursorSkip() === 'number') countDocumentsOptions.skip = this.cursorSkip();
             if (typeof this.cursorLimit() === 'number') countDocumentsOptions.limit = this.cursorLimit();
         }
-
+        
         return col.countDocuments(query, countDocumentsOptions, callback);
     }
     return originalCursorCount.call(this, ...args);

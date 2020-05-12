@@ -72,6 +72,10 @@ describe('mongo-count', function () {
             expect(countSpy).to.have.been.calledOnceWith(false, sinon.match.func);
             expect(countDocumentsSpy).to.have.not.been.called;
         }); 
+
+        it('works with empty query', function () {
+            expect(Col.find().count()).to.be.equal(3);
+        });
     });
 
     describe('collection.count', function () {
@@ -80,6 +84,10 @@ describe('mongo-count', function () {
             expect(countDocumentsSpy).to.have.been.calledOnceWith({
                 a: 1,
             });
+        });
+
+        it('works with empty query', function () {
+            expect(Promise.await(Col.rawCollection().count())).to.be.equal(3);
         });
     });
 });
