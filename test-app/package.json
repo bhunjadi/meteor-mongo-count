@@ -4,7 +4,8 @@
   "description": "",
   "main": "../package.js",
   "scripts": {
-    "test-watch": "cd ../testing && MONGO_URL= ROOT_URL= TEST_WATCH=1 meteor test-packages ../"
+    "test": "MONGO_URL= ROOT_URL= meteor test-packages --once --driver-package meteortesting:mocha ../",
+    "test-watch": "MONGO_URL= ROOT_URL= TEST_WATCH=1 meteor test-packages --driver-package meteortesting:mocha ../"
   },
   "author": "",
   "license": "ISC",
