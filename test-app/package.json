@@ -10,10 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@babel/runtime": "^7.9.6",
-    "chai": "^4.2.0",
-    "mocha": "^7.1.2",
-    "sinon": "^9.0.2",
-    "sinon-chai": "^3.5.0"
+
   }
 }

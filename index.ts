@@ -1,7 +1,10 @@
 import {MongoInternals} from 'meteor/mongo';
+import { FindCursor, CountOptions, CountDocumentsOptions, FindOptions } from 'mongodb';
 
-const RawCollection = MongoInternals.NpmModule.Collection;
-const Cursor = MongoInternals.NpmModule.Cursor;
+const mongoModule = MongoInternals.NpmModules.mongodb.module;
+
+const RawCollection = mongoModule.Collection;
+const FindCursorClass = mongoModule.FindCursor;
 
 function isInTransaction() {
     const MongoTransactionsPackage = Package['bhunjadi:mongo-transactions'];
@@ -17,30 +20,46 @@ RawCollection.prototype.count = function (...args) {
     return originalCollectionCount.call(this, ...args);
 };
 
-const originalCursorCount = Cursor.prototype.count;
+const originalCursorCount = FindCursorClass.prototype.count;
 
-Cursor.prototype.count = function (...args) {
+FindCursorClass.prototype.count = function (this: FindCursor, ...args) {
     if (isInTransaction()) {
         const callback = typeof args[args.length - 1] === 'function' ? args.pop() : undefined;
-        const options = typeof args[args.length - 1] === 'object' ? args.shift() || {} : {};
-        const applySkipLimit = args.length ? args.shift() ?? true : true;
+        const options: CountOptions = typeof args[args.length - 1] === 'object' ? args.shift() || {} : {};
 
-        const {operation} = this;
-        const {ns: {collection: collectionName}, options: {db}, cmd: {query}} = operation;
+        // Sadly, we have to use internal fields to get data needed, like filter, limit, skip and collation.
+        const symbols = Object.getOwnPropertySymbols(this);
+        const kFilter = symbols.find((s) => s.description === 'filter');
+        const kBuiltOptions = symbols.find((s) => s.description === 'builtOptions');
+        if (!kFilter || !kBuiltOptions) {
+            console.warn(new Error().stack);
+            console.warn('Cannot find kFilter and kBuiltOption on a cursor when fetching count. Default to deprected method.');
+            return originalCursorCount.call(this, ...arguments);
+        }
 
-        const col = db.collection(collectionName);
+        const filter = this[kFilter];
+        const builtOptions: FindOptions = this[kBuiltOptions];
 
-        const countDocumentsOptions = {
+        const {client} = MongoInternals.defaultRemoteCollectionDriver().mongo;
+        const db = client.db(this.namespace.db);
+        const collection = db.collection(this.namespace.collection);
+
+        const countDocumentsOptions: CountDocumentsOptions = {
             ...options,
-            collation: this.cmd.collation,
         };
 
-        if (applySkipLimit) {
-            if (typeof this.cursorSkip() === 'number') countDocumentsOptions.skip = this.cursorSkip();
-            if (typeof this.cursorLimit() === 'number') countDocumentsOptions.limit = this.cursorLimit();
+        if (typeof builtOptions.limit === 'number') {
+            countDocumentsOptions.limit = builtOptions.limit;
         }
-        
-        return col.countDocuments(query, countDocumentsOptions, callback);
+        if (typeof builtOptions.skip === 'number') {
+            countDocumentsOptions.skip = builtOptions.skip;
+        }
+        if (builtOptions.collation) {
+            countDocumentsOptions.collation = builtOptions.collation;
+        }
+
+        return collection.countDocuments(filter, countDocumentsOptions, callback);
     }
+
     return originalCursorCount.call(this, ...args);
 };
