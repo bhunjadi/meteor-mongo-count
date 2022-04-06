@@ -22,7 +22,7 @@ RawCollection.prototype.count = function (...args) {
 
 const originalCursorCount = FindCursorClass.prototype.count;
 
-FindCursorClass.prototype.count = function (this: FindCursor, ...args) {
+FindCursorClass.prototype.count = function (...args) {
     if (isInTransaction()) {
         const callback = typeof args[args.length - 1] === 'function' ? args.pop() : undefined;
         const options: CountOptions = typeof args[args.length - 1] === 'object' ? args.shift() || {} : {};
