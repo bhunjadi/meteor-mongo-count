@@ -13,6 +13,9 @@ function isInTransaction() {
 
 const originalCollectionCount = RawCollection.prototype.count;
 
+const a: number = 'abc';
+console.log(a);
+
 RawCollection.prototype.count = function (...args) {
     if (isInTransaction()) {
         return this.countDocuments(...args);
@@ -22,7 +25,7 @@ RawCollection.prototype.count = function (...args) {
 
 const originalCursorCount = FindCursorClass.prototype.count;
 
-FindCursorClass.prototype.count = function (...args) {
+FindCursorClass.prototype.count = function (this: FindCursor, ...args) {
     if (isInTransaction()) {
         const callback = typeof args[args.length - 1] === 'function' ? args.pop() : undefined;
         const options: CountOptions = typeof args[args.length - 1] === 'object' ? args.shift() || {} : {};
@@ -33,8 +36,8 @@ FindCursorClass.prototype.count = function (...args) {
         const kBuiltOptions = symbols.find((s) => s.description === 'builtOptions');
         if (!kFilter || !kBuiltOptions) {
             console.warn(new Error().stack);
-            console.warn('Cannot find kFilter and kBuiltOption on a cursor when fetching count. Default to deprected method.');
-            return originalCursorCount.call(this, ...arguments);
+            console.warn('Cannot find kFilter and kBuiltOption on a cursor when fetching count. Default to deprecated method.');
+            return originalCursorCount.call(this, ...args);
         }
 
         const filter = this[kFilter];
