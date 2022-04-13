@@ -13,9 +13,6 @@ function isInTransaction() {
 
 const originalCollectionCount = RawCollection.prototype.count;
 
-const a: number = 'abc';
-console.log(a);
-
 RawCollection.prototype.count = function (...args) {
     if (isInTransaction()) {
         return this.countDocuments(...args);
