@@ -1,27 +1,27 @@
 Package.describe({
-    name: 'bhunjadi:mongo-count',
-    version: '3.0.0',
-    // Brief, one-line summary of the package.
-    summary: '',
-    // URL to the Git repository containing the source code for this package.
-    git: '',
-    // By default, Meteor will default to using README.md for documentation.
-    // To avoid submitting documentation, set this field to null.
-    documentation: 'README.md'
+  name: 'bhunjadi:mongo-count',
+  version: '4.0.0',
+  // Brief, one-line summary of the package.
+  summary: '',
+  // URL to the Git repository containing the source code for this package.
+  git: '',
+  // By default, Meteor will default to using README.md for documentation.
+  // To avoid submitting documentation, set this field to null.
+  documentation: 'README.md',
 });
 
-Package.onUse(function(api) {
-    api.versionsFrom('2.7');
-    api.use('typescript');
-    api.use('mongo');
-    api.mainModule('index.ts', 'server');
+Package.onUse(function (api) {
+  api.versionsFrom('3.0');
+  api.use('typescript');
+  api.use('mongo');
+  api.mainModule('index.ts', 'server');
 });
 
-Package.onTest(function(api) {
-    api.versionsFrom('2.7');
-    api.use('meteortesting:mocha');
-    api.use('typescript');
-    api.use('mongo');
-    api.use('bhunjadi:mongo-count');
-    api.mainModule('tests/server.ts', 'server');
+Package.onTest(function (api) {
+  api.versionsFrom('3.0');
+  api.use('meteortesting:mocha');
+  api.use('typescript');
+  api.use('mongo');
+  api.use('bhunjadi:mongo-count');
+  api.mainModule('tests/server.ts', 'server');
 });
