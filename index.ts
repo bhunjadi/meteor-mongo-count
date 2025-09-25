@@ -1,8 +1,6 @@
 import { MongoInternals } from 'meteor/mongo';
 import {
   FindCursor,
-  CountOptions,
-  CountDocumentsOptions,
   FindOptions,
 } from 'mongodb';
 
@@ -29,9 +27,7 @@ const originalCursorCount = FindCursorClass.prototype.count;
 
 FindCursorClass.prototype.count = function (this: FindCursor, ...args) {
   if (isInTransaction()) {
-    const callback =
-      typeof args[args.length - 1] === 'function' ? args.pop() : undefined;
-    const options: CountOptions =
+    const options =
       typeof args[args.length - 1] === 'object' ? args.shift() || {} : {};
 
     // Sadly, we have to use internal fields to get data needed, like filter, limit, skip and collation.
@@ -51,9 +47,9 @@ FindCursorClass.prototype.count = function (this: FindCursor, ...args) {
 
     const { client } = MongoInternals.defaultRemoteCollectionDriver().mongo;
     const db = client.db(this.namespace.db);
-    const collection = db.collection(this.namespace.collection);
+    const collection = db.collection(this.namespace.collection!);
 
-    const countDocumentsOptions: CountDocumentsOptions = {
+    const countDocumentsOptions = {
       ...options,
     };
 
@@ -67,7 +63,7 @@ FindCursorClass.prototype.count = function (this: FindCursor, ...args) {
       countDocumentsOptions.collation = builtOptions.collation;
     }
 
-    return collection.countDocuments(filter, countDocumentsOptions, callback);
+    return collection.countDocuments(filter, countDocumentsOptions);
   }
 
   return originalCursorCount.call(this, ...args);
